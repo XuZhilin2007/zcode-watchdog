@@ -1,0 +1,7 @@
+# 运行时产物（含个人用量数据，不入库）
+watchdog.log
+watchdog.log.*
+watchdog-state.json
+
+*.bak
+node_modules/
