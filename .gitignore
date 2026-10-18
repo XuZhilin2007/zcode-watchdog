@@ -2,6 +2,7 @@
 watchdog.log
 watchdog.log.*
 watchdog-state.json
+watchdog-hidden.vbs
 
 *.bak
 node_modules/

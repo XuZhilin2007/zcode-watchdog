@@ -1,17 +1,28 @@
-# 注册 ZCodeWatchdog 计划任务（v2 架构：杀不死版）
-#   1) 隐藏窗口运行：powershell 常驻包裹 node，无可见控制台，无从手滑关闭
-#   2) 5 分钟补位触发：进程死了任务回到 Ready，下一个 5 分钟周期自动拉起
-#      （任务运行中时 MultipleInstances=IgnoreNew 保证不会重复起第二个）
-#   3) 无 72 小时执行时限；电池供电也运行；睡醒后立即补跑
-# 用法: powershell -NoProfile -ExecutionPolicy Bypass -File install-task.ps1
-# 卸载: powershell -NoProfile -ExecutionPolicy Bypass -File uninstall-task.ps1
+# Register ZCodeWatchdog scheduled task (v3 architecture: truly windowless)
+#   1) wscript.exe is a GUI-subsystem binary and never creates a console.
+#      A generated VBS launcher starts node hidden (Run ..., 0, True) and
+#      waits for it, so the task stays Running with zero visible windows.
+#   2) 5-minute keepalive repetition trigger: if the process dies for any
+#      reason the task returns to Ready and the next tick relaunches it
+#      (MultipleInstances=IgnoreNew prevents duplicates while alive).
+#   3) No 72-hour execution time limit; runs on batteries; catches up after sleep.
+#   Note: the v1.0.2 approach (powershell -WindowStyle Hidden) still showed a
+#   console window when launched from Task Scheduler and died when the window
+#   was closed, so it was abandoned.
+# Usage:   powershell -NoProfile -ExecutionPolicy Bypass -File install-task.ps1
+# Uninstall: powershell -NoProfile -ExecutionPolicy Bypass -File uninstall-task.ps1
 
 $node = (Get-Command node.exe -ErrorAction Stop).Source
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$script = Join-Path $dir "watchdog.mjs"
+$mjs = Join-Path $dir "watchdog.mjs"
+$vbs = Join-Path $dir "watchdog-hidden.vbs"
 
-$argLine = "-NoProfile -WindowStyle Hidden -Command `"& '$node' '$script'`""
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $argLine
+# Generate the machine-specific hidden launcher from the committed template.
+$tmplPath = Join-Path $dir "watchdog-hidden.vbs.template"
+$tmpl = Get-Content $tmplPath -Raw
+Set-Content -Path $vbs -Value ($tmpl.Replace("__NODE__", $node).Replace("__MJS__", $mjs)) -Encoding ASCII
+
+$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument ('"' + $vbs + '"')
 
 $tLogon = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $tKeepalive = New-ScheduledTaskTrigger -Once -At (Get-Date) `
@@ -26,4 +37,4 @@ $settings = New-ScheduledTaskSettingsSet `
 Register-ScheduledTask -TaskName "ZCodeWatchdog" -Action $action -Trigger @($tLogon, $tKeepalive) `
   -Settings $settings -Force -ErrorAction Stop | Out-Null
 Start-ScheduledTask -TaskName "ZCodeWatchdog" -ErrorAction Stop
-Write-Host "ZCodeWatchdog 已注册并启动（隐藏窗口 / 5 分钟断链自愈 / 登录自启 / 无时限）"
+Write-Host "ZCodeWatchdog registered and started (wscript hidden / 5-min self-heal / logon autostart / no time limit)"
