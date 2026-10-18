@@ -47,8 +47,19 @@ node watchdog.mjs --dry-run  # 只打印决策，不真正用卡
 node watchdog.mjs --once     # 单次检查后退出
 ```
 
-Windows 下可双击 `start-watchdog.bat`（崩溃后 30 秒自动重启）。想开机自启，把该
-bat 的快捷方式放进启动文件夹（`Win+R` → `shell:startup`）。
+Windows 下可双击 `start-watchdog.bat`（崩溃后 30 秒自动重启）。
+
+## 开机自启（推荐：计划任务）
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File install-task.ps1
+```
+
+注册为 Windows 计划任务：**登录自启、崩溃 1 分钟自动重启、无执行时限**，与 ZCode
+进程完全解耦——ZCode 关闭、电脑重启都不影响监控。卸载用 `uninstall-task.ps1`。
+
+> 注意：不要只依赖在某个终端或宿主进程（比如 ZCode 会话）里前台运行——宿主一关，
+> 看门狗就没了。计划任务或独立运行 `start-watchdog.bat` 才是无人值守的正确姿势。
 
 ## 配置（config.json）
 
