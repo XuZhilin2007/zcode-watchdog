@@ -6,3 +6,12 @@ watchdog-hidden.vbs
 
 *.bak
 node_modules/
+dist/
+.cache/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.tgz
+*.zip
+.env
+.env.*
