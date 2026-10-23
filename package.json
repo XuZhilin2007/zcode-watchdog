@@ -1,0 +1,16 @@
+{
+  "name": "zcode-watchdog",
+  "version": "2.0.0-beta.1",
+  "description": "Local Windows CLI for GLM Coding Plan quota monitoring and durable reset-card accounting",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=24.15.0 <25" },
+  "bin": { "zwd": "bin/zwd.mjs" },
+  "files": ["bin", "src", "scripts/scheduler.ps1", "scripts/notify.ps1", "README.md", "CHANGELOG.md", "LICENSE", "docs"],
+  "scripts": {
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "pack:release": "node scripts/package.mjs"
+  },
+  "repository": { "type": "git", "url": "https://github.com/XuZhilin2007/zcode-watchdog.git" }
+}

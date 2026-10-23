@@ -1,9 +1,0 @@
-{
-  "pollMs": 60000,
-  "thresholdPct": 90,
-  "weekThresholdPct": 97,
-  "maxCardsPerDay": 0,
-  "cooldownMs": 1800000,
-  "rolloverGraceMs": 600000,
-  "dryRun": false
-}
